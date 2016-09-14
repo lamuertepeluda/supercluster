@@ -20,6 +20,16 @@ SuperCluster.prototype = {
         radius: 40,   // cluster radius in pixels
         extent: 512,  // tile extent (radius is calculated relative to it)
         nodeSize: 16, // size of the R-tree leaf node, affects performance
+        accumulator:  /* custom aggregator function
+          function(pointProperties, neighborProperties) {
+            // this example assumes the original point has propeties value, min, and max
+            return {
+              sum: pointProperties.value + neighborProperties.value,
+              min: Math.min(pointProperties.min, neighborProperties.min),
+              max: Math.max(pointProperties.max, neighborProperties.max)
+            };
+          }
+        */ null,
         log: false    // whether to log timing info
     },
 
@@ -125,6 +135,7 @@ SuperCluster.prototype = {
             var numPoints = p.numPoints;
             var wx = p.wx * numPoints;
             var wy = p.wy * numPoints;
+            var properties = this.options.accumulator ? p.properties : null;
 
             for (var j = 0; j < bboxNeighbors.length; j++) {
                 var b = bboxNeighbors[j];
@@ -135,6 +146,10 @@ SuperCluster.prototype = {
                     wx += b.wx * b.numPoints; // accumulate coordinates for calculating weighted center
                     wy += b.wy * b.numPoints;
                     numPoints += b.numPoints;
+
+                    if (this.options.accumulator) {
+                      properties = this.options.accumulator(properties, b.properties);
+                    }
                 }
             }
 
@@ -146,6 +161,7 @@ SuperCluster.prototype = {
             // form a cluster with neighbors
             var cluster = createCluster(p.x, p.y);
             cluster.numPoints = numPoints;
+            cluster.properties = properties;
 
             // save weighted cluster center for display
             cluster.wx = wx / numPoints;
@@ -184,6 +200,7 @@ function createPointCluster(p) {
     var coords = p.geometry.coordinates;
     var cluster = createCluster(lngX(coords[0]), latY(coords[1]));
     cluster.point = p;
+    cluster.properties = extend({}, p.properties);
     return cluster;
 }
 
@@ -202,11 +219,11 @@ function getClusterProperties(cluster) {
     var count = cluster.numPoints;
     var abbrev = count >= 10000 ? Math.round(count / 1000) + 'k' :
                  count >= 1000 ? (Math.round(count / 100) / 10) + 'k' : count;
-    return {
+    return extend({
         cluster: true,
         point_count: count,
         point_count_abbreviated: abbrev
-    };
+    }, cluster.properties);
 }
 
 // longitude/latitude to spherical mercator in [0..1] range
