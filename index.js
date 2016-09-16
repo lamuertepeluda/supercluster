@@ -152,7 +152,7 @@ SuperCluster.prototype = {
             var numPoints = p.numPoints;
             var wx = p.x * numPoints;
             var wy = p.y * numPoints;
-            var properties = this.options.accumulator ? p.properties : null;
+            var properties = this.options.accumulator ? extend({}, p.properties) : null;
 
             for (var j = 0; j < neighborIds.length; j++) {
                 var b = tree.points[neighborIds[j]];
