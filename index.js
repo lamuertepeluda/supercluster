@@ -21,12 +21,17 @@ SuperCluster.prototype = {
         extent: 512,  // tile extent (radius is calculated relative to it)
         nodeSize: 64, // size of the KD-tree leaf node, affects performance
         accumulator:  /* custom aggregator function
-          function(pointProperties, neighborProperties) {
+          function(point, neighbor) {
             // this example assumes the original point has propeties value, min, and max
+
+            var valueA = point.properties[point.numPoints > 1 ? 'sum' : 'value'];
+            var valueB = neighbor.properties[neighbor.numPoints > 1 ? 'sum' : 'value'];
+
             return {
-              sum: pointProperties.value + neighborProperties.value,
-              min: Math.min(pointProperties.min, neighborProperties.min),
-              max: Math.max(pointProperties.max, neighborProperties.max)
+              sum: valueA + valueB,
+              min: Math.min(point.properties.min, neighbor.properties.min),
+              max: Math.max(point.properties.max, neighbor.properties.max),
+              avg: Math.round(100 * (valueA + valueB) / (point.numPoints + neighbor.numPoints)) / 100
             };
           }
         */ null,
@@ -153,15 +158,22 @@ SuperCluster.prototype = {
                 var b = tree.points[neighborIds[j]];
                 // filter out neighbors that are too far or already processed
                 if (zoom < b.zoom) {
+                    if (this.options.accumulator) {
+                        properties = this.options.accumulator({
+                            numPoints: numPoints,
+                            properties: properties
+                        }, {
+                            numPoints: b.numPoints,
+                            properties: extend({}, b.properties)
+                        });
+                    }
+
                     foundNeighbors = true;
                     b.zoom = zoom; // save the zoom (so it doesn't get processed twice)
                     wx += b.x * b.numPoints; // accumulate coordinates for calculating weighted center
                     wy += b.y * b.numPoints;
                     numPoints += b.numPoints;
 
-                    if (this.options.accumulator) {
-                      properties = this.options.accumulator(properties, b.properties);
-                    }
                 }
             }
 
