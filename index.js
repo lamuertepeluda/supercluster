@@ -214,7 +214,7 @@ SuperCluster.prototype = {
             var numPoints = p.numPoints;
             var wx = p.x * numPoints;
             var wy = p.y * numPoints;
-            var properties = this.options.accumulator ? extend({}, p.properties) : null;
+            var properties = this.options.accumulator ? p.properties : null;
 
             for (var j = 0; j < neighborIds.length; j++) {
                 var b = tree.points[neighborIds[j]];
@@ -226,7 +226,7 @@ SuperCluster.prototype = {
                             properties: properties
                         }, {
                             numPoints: b.numPoints,
-                            properties: extend({}, b.properties)
+                            properties: b.properties
                         });
                     }
 
@@ -267,7 +267,7 @@ function createCluster(x, y, numPoints, id, properties) {
 
 function createPointCluster(p, i) {
     var coords = p.geometry.coordinates;
-    return createCluster(lngX(coords[0]), latY(coords[1]), 1, i, extend({}, p.properties));
+    return createCluster(lngX(coords[0]), latY(coords[1]), 1, i, p.properties);
 }
 
 function getClusterJSON(cluster) {
