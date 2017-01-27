@@ -1,10 +1,12 @@
 var CATEGORY_NAME = 'featureclass';
 
-function aggregatorFunction(pointProperties, neighborProperties) {
+function aggregatorFunction(point, neighbor) {
     // this example assumes the original point has property CATEGORY_NAME
     var retval = {
         categories: {}
     };
+    var pointProperties = point.properties;
+    var neighborProperties = neighbor.properties;
     var pointCategory = typeof pointProperties[CATEGORY_NAME] === 'undefined' ? null : pointProperties[CATEGORY_NAME];
     var neighborCategory = typeof neighborProperties[CATEGORY_NAME] === 'undefined' ? null : neighborProperties[CATEGORY_NAME];
     pointCategory = pointCategory === '' ? 'no-category' : pointCategory;
