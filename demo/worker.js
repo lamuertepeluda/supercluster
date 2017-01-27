@@ -1,6 +1,7 @@
 'use strict';
 
 importScripts('../dist/supercluster.js');
+importScripts('./aggregator.js');
 
 var now = Date.now();
 
@@ -13,7 +14,8 @@ getJSON('../test/fixtures/places.json', function (geojson) {
         log: true,
         radius: 60,
         extent: 256,
-        maxZoom: 17
+        maxZoom: 17,
+        accumulator: aggregatorFunction || null
     }).load(geojson.features);
 
     console.log(index.getTile(0, 0, 0));
