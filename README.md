@@ -39,6 +39,24 @@ For the given `bbox` array (`[westLng, southLat, eastLng, northLat]`) and intege
 | extent   | 512     | (Tiles) Tile extent. Radius is calculated relative to this value. |
 | nodeSize | 64      | Size of the KD-tree leaf node. Affects performance.               |
 | log      | false   | Whether timing info should be logged.                             |
+| accumulator      | null   | function for getting custom metrics for each cluster       |
+
+### accumulator
+
+Custom aggregator function
+
+```javascript
+function(pointProperties, neighborProperties) {
+    // this example assumes the original point has properties value, min, and max
+    return {
+        sum: pointProperties.value + neighborProperties.value,
+        min: Math.min(pointProperties.min, neighborProperties.min),
+        max: Math.max(pointProperties.max, neighborProperties.max)
+    };
+}
+```
+
+See [demo](/demo) for passing parameters to a Worker.
 
 ## Developing Supercluster
 
